@@ -100,6 +100,30 @@ class Dqn():
         #Have an action2rotation in map.py-> 0 = 0degrees, 1 = 20degress, -1 = -20degress
         self.last_action = 0 #just initializing it with 0
         self.last_reward = 0 #reward is between 0 and 1
+    
+    #Take input_state as a param because select_action depends directly on the q values
+    #q values are the output of the neural network
+    #output of the neural network directly depends on the input of the neural network
+    #states is 5D
+    def select_action(self, state):
+        #softmax function is used to select an action
+        #softmax lets the ai to explore but also exploits what it already knows
+        #probs is the probability of each q values that comes from softmax
+        #Need to use the F lib to implement it
+        #state is a torch tensor. Wrap the state around a tensor var to convert
+        #temp param (t=7) tells which action to play. temp is between 0 and 1
+        #if closer to 0 less likely, if closer to 1 ai is more likey to take that action
+        probs = F.softmax(self.model(Variable(state, volatile = True))*7) #the output of model are the q values
+        #what does the t = 7 actually do?:
+            #softmax([1,2,3]) = [0.04, 0.11, 0.85] => softmax([1,2,3]*3) = [0, 0.02, 0.98]
+            #Basically inflates the probability of the higher q value
+            #So ai will be even more confident about taking this action
+        #Random draw of the probs
+        action = probs.multinomial() #action is the "extra" six dimension
+        return action.data[0,0] #the action (0, 1 or 2) is encoded in data[0,0]
+    
+        
+        
         
         
 
