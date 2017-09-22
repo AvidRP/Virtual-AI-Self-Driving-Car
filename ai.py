@@ -113,7 +113,7 @@ class Dqn():
         #state is a torch tensor. Wrap the state around a tensor var to convert
         #temp param (t=7) tells which action to play. temp is between 0 and 1
         #if closer to 0 less likely, if closer to 1 ai is more likey to take that action
-        probs = F.softmax(self.model(Variable(state, volatile = True))*0) #the output of model are the q values
+        probs = F.softmax(self.model(Variable(state, volatile = True))*100) #the output of model are the q values
         #what does the t = 7 actually do?:
             #softmax([1,2,3]) = [0.04, 0.11, 0.85] => softmax([1,2,3]*3) = [0, 0.02, 0.98]
             #Basically inflates the probability of the higher q value
