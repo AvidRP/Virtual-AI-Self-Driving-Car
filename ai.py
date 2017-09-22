@@ -53,9 +53,16 @@ class Network(nn.Module):
 class ReplayMemory(object): 
     #capacity -> batches of data to store -> 100
     def __init__(self, capacity):
-        self.capacity = 100
+        self.capacity = capacity
         #memory contains the last 100 events
         self.memory = []
+        
+    # event has four parts:
+        #last state, new state, last action, last reward
+    def push(self, event):
+        self.memory.append(event)
+        if len(self.memory) > self.capacity:
+            del self.memory[0]
         
     
     
