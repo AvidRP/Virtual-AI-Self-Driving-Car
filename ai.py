@@ -57,13 +57,23 @@ class ReplayMemory(object):
         #memory contains the last 100 events
         self.memory = []
         
-    # event has four parts:
-        #last state, new state, last action, last reward
+    # event has three parts:
+        #last state, last action, last reward
     def push(self, event):
         self.memory.append(event)
         if len(self.memory) > self.capacity:
             del self.memory[0]
-        
+    
+    #Gets random samples from out memory
+    #batch size is how many samples do we return
+    def sample(self, batch_size):
+        #random ->sample function from random library 
+        #take random sample from memory of batch_size
+        #zip(*) reshapes your list -> separates the states action and reward and stores each as a batch
+        samples = zip(*random.sample(self.memory, batch_size))
+        #maps variables to torch variables
+        #the variable library converts x
+        return map(lambda x: Variable(torch.cat(x, 0)), sample)
     
     
         
