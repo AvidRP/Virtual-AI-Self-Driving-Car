@@ -96,7 +96,7 @@ class Dqn():
         #last_state is a 5D vector: 3 sensor signals, orientation and -orientation
         #for pytorch can't just be a vector needs to be a tensor
         #However the network expects 6 dimensions so add a new dimension at index 0 using unsqueeze
-        self.last_state =  torch.tensor(input_size).unsqueeze(0)
+        self.last_state = torch.Tensor(input_size).unsqueeze(0)
         #Have an action2rotation in map.py-> 0 = 0degrees, 1 = 20degress, -1 = -20degress
         self.last_action = 0 #just initializing it with 0
         self.last_reward = 0 #reward is between 0 and 1
@@ -113,7 +113,7 @@ class Dqn():
         #state is a torch tensor. Wrap the state around a tensor var to convert
         #temp param (t=7) tells which action to play. temp is between 0 and 1
         #if closer to 0 less likely, if closer to 1 ai is more likey to take that action
-        probs = F.softmax(self.model(Variable(state, volatile = True))*7) #the output of model are the q values
+        probs = F.softmax(self.model(Variable(state, volatile = True))*0) #the output of model are the q values
         #what does the t = 7 actually do?:
             #softmax([1,2,3]) = [0.04, 0.11, 0.85] => softmax([1,2,3]*3) = [0, 0.02, 0.98]
             #Basically inflates the probability of the higher q value
@@ -153,16 +153,16 @@ class Dqn():
     #connects ai to map
     def update(self, reward, new_signal):
         #new to convert signal into a tensor type and add the extra dimension
-        new_state = torch.tensor(new_signal).float().unsqueeze(0)
+        new_state = torch.Tensor(new_signal).float().unsqueeze(0)
         #need to update the new transition into mem
         #all are torch tensors except for last_action -> need to convert
         #last reward is already  a float so no need to use Long Tensor
-        self.memory.push((self.last_state, new_state, torch.LongTensor([int(self.last_action)]), torch.tensor([self.last_reward])))
+        self.memory.push((self.last_state, new_state, torch.LongTensor([int(self.last_action)]), torch.Tensor([self.last_reward])))
         action = self.select_action(new_state)
         #Now time for ai to learn->see if it's doing things correctly
         if len(self.memory.memory) > 100:
             #random 100 transitions from mem
-            batch_state, batch_next_state, batch_reward, batch_action = self.memory.sample(100)
+            batch_state, batch_next_state, batch_action, batch_reward = self.memory.sample(100)
             self.learn(batch_state, batch_next_state, batch_reward, batch_action)
         #updating the last action, state and reward for the ai 
         self.last_action = action
@@ -176,25 +176,25 @@ class Dqn():
     
     #computes avg score in the reward window
     def score(self):
-        return sum(self.reward_window)/(len(self.reward_window)+1)
+        return sum(self.reward_window)/(len(self.reward_window)+1.)
     
     #to save brain when you close the app
     def save(self):
         #need to save the network and the optimizer to a file (last_brain.pth)
-        torch.save({'state_dict': self.model.state_dict(), 
-                    'optimizer': self.optimizer.state_dict()}, 'last_brain.pth')
+        torch.save({'state_dict': self.model.state_dict(),
+                    'optimizer' : self.optimizer.state_dict(),
+                   }, 'last_brain.pth')
     
     #load the brain when app reopened
     def load(self):
         if os.path.isfile('last_brain.pth'):
-            print("Loading the brain...")
-            checkpoint = torch.load('load_brain.pth')
-            #since model inherits from torch
+            print("loading brain... ")
+            checkpoint = torch.load('last_brain.pth')
             self.model.load_state_dict(checkpoint['state_dict'])
             self.optimizer.load_state_dict(checkpoint['optimizer'])
-            print("Brain loaded")
+            print("done !")
         else:
-            print("last brain not found...")
+            print("brain was not saved")
     
         
         
