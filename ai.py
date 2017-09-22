@@ -148,6 +148,39 @@ class Dqn():
         #Need to update the weights of the actions
         self.optimizer.step()
         
+    #This updates all the required things when ai transitions into new state 
+    #It also adds the new stuff to memory
+    #connects ai to map
+    def update(self, reward, new_signal):
+        #new to convert signal into a tensor type and add the extra dimension
+        new_state = torch.tensor(new_signal).float().unsqueeze(0)
+        #need to update the new transition into mem
+        #all are torch tensors except for last_action -> need to convert
+        #last reward is already  a float so no need to use Long Tensor
+        self.memory.push((self.last_state, new_state, torch.LongTensor([int(self.last_action)]), torch.tensor([self.last_reward])))
+        action = self.select_action(new_state)
+        #Now time for ai to learn->see if it's doing things correctly
+        if len(self.memory.memory) > 100:
+            #random 100 transitions from mem
+            batch_state, batch_next_state, batch_reward, batch_action = self.memory.sample(100)
+            self.learn(batch_state, batch_next_state, batch_reward, batch_action)
+        #updating the last action, state and reward for the ai 
+        self.last_action = action
+        self.last_state = new_state
+        self.last_reward = reward
+        self.reward_window.append(reward)
+        #sliding window: window has a fixed size
+        if len(self.reward_window) > 1000:
+            del self.reward_window[0]
+        return action
+    
+    
+        
+            
+        
+        
+    
+        
         
         
 
