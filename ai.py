@@ -46,7 +46,17 @@ class Network(nn.Module):
         #output neurons -> q values
         q_values = self.fc2(x)
         #need to return the q values
-        return q
+        return q_values
+    
+#implementing experience replay
+#store batches making it long term memory instead of short term memory
+class ReplayMemory(object): 
+    #capacity -> batches of data to store -> 100
+    def __init__(self, capacity):
+        self.capacity = 100
+        #memory contains the last 100 events
+        self.memory = []
+        
     
     
         
