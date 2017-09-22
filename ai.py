@@ -122,7 +122,31 @@ class Dqn():
         action = probs.multinomial() #action is the "extra" six dimension
         return action.data[0,0] #the action (0, 1 or 2) is encoded in data[0,0]
     
-        
+    #forward propagation and back propagation
+    #take batches of params instead of every single data so the ai is less biased
+    #transition of MDP
+    def learn(self, batch_state, batch_next_state, batch_reward, batch_action):
+        #output only wants the action that is chosen not all the q values of all actions
+        #1, batch-action helps acomplish that
+        #The squeeze at the end is to get rid of the batches since only need batches in the neural network
+        #in the learning process ai needs the actual output -> up left right
+        outputs = self.model(batch_state).gather(1, batch_action.unsqueeze(1)).squeeze(1) #need to give batch_action that extra dimension too
+        #next_output to calculate the target value
+        #need to detach the output of batch_next_state to compare and get the max (according to the equation)
+        #1->to specify taking max wrt action (represented by index 1)
+        #0->to get the max of the next state wrt action
+        next_outputs = self.model(batch_next_state).detach().max(1)[0]
+        #comes straight out of the formula
+        target = self.gamma*next_outputs + batch_reward
+        #need to use all this info to calculate Temporal Difference Loss
+        td_loss = F.smooth_l1_loss(outputs, target)
+        #Need to now back propagate the td_loss 
+        #Need to reinitialize optimizer for every loop
+        self.optimizer.zero_grad()
+        #retain_variables frees some space
+        td_loss.backward(retain_variables = True)
+        #Need to update the weights of the actions
+        self.optimizer.step()
         
         
         
