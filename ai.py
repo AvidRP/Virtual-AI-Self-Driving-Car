@@ -73,7 +73,36 @@ class ReplayMemory(object):
         samples = zip(*random.sample(self.memory, batch_size))
         #maps variables to torch variables
         #the variable library converts x
-        return map(lambda x: Variable(torch.cat(x, 0)), sample)
+        return map(lambda x: Variable(torch.cat(x, 0)), samples)
+    
+#Deep Q Learning Model
+class Dqn():
+    
+    #takes the same params as Network class
+    #gamma -> discount factor
+    def __init__(self, input_size, nb_action, gamma):
+        self.gamma = gamma
+        #mean of the last 100 rewards
+        self.reward_window = []
+        #model is just the neural network obj
+        self.model = Network(input_size, nb_action)
+        self.memory = ReplayMemory(100000)
+        #uses torch.optim class to optimize the network
+        #Creating an obj of the Adam class from optim
+        #the first param connects the network model to the optimizer
+        #lr (learning rate) needs to be optimized; if too high the ai wont explore
+        self.optimizer = optim.Adam(self.model.parameters(), lr = 0.001)
+        #last state, last action and last reward
+        #last_state is a 5D vector: 3 sensor signals, orientation and -orientation
+        #for pytorch can't just be a vector needs to be a tensor
+        #However the network expects 6 dimensions so add a new dimension at index 0 using unsqueeze
+        self.last_state =  torch.tensor(input_size).unsqueeze(0)
+        #Have an action2rotation in map.py-> 0 = 0degrees, 1 = 20degress, -1 = -20degress
+        self.last_action = 0 #just initializing it with 0
+        self.last_reward = 0 #reward is between 0 and 1
+        
+        
+
     
     
         
