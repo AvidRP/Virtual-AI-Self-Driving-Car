@@ -174,6 +174,21 @@ class Dqn():
             del self.reward_window[0]
         return action
     
+    #computes avg score in the reward window
+    def score(self):
+        return sum(self.reward_window)/(len(self.reward_window)+1)
+    
+    #to save brain when you close the app
+    def save(self):
+        #need to save the network and the optimizer to a file (last_brain.pth)
+        torch.save({'state_dict': self.model.state_dict(), 
+                    'optimizer': self.optimizer.state_dict()}, 'last_brain.pth')
+    
+    
+    
+        
+        
+    
     
         
             
